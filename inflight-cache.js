@@ -1,4 +1,4 @@
-const cacheIdentifierForPayload = require('./cache-utils').cacheIdentifierForPayload
+const stringify = require('json-stable-stringify')
 
 module.exports = createInflightCache
 
@@ -7,7 +7,7 @@ function createInflightCache() {
   const inflightRequests = {}
 
   return (req, res, next, end) => {
-    const cacheId = cacheIdentifierForPayload(req)
+    const cacheId = stringify(req)
     // if not cacheable, skip
     if (!cacheId) return next()
     // check for matching requests
