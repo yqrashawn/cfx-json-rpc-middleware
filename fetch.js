@@ -1,6 +1,6 @@
 const fetch = global.fetch || require('fetch-ponyfill')().fetch
 const url = require('url')
-const { errors: rpcErrors } = require('eth-json-rpc-errors')
+const { ethErrors: { rpc: rpcErrors } } = require('eth-json-rpc-errors')
 const btoa = require('btoa')
 const createAsyncMiddleware = require('json-rpc-engine/src/createAsyncMiddleware')
 
@@ -76,7 +76,8 @@ function parseResponse (fetchRes, body) {
     throw rpcErrors.internal(`Non-200 status code: '${fetchRes.status}'`, body)
   }
   // check for rpc error
-  if (body.error) throw rpcErrors.internal(body.error.toString(), body.error)
+  if (body.error) throw rpcErrors.internal(body.error)
+
   // return successful result
   return body.result
 }
