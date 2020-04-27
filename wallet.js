@@ -42,6 +42,10 @@ function createWalletMiddleware(opts = {}) {
     cfx_signTypedData_v3: signTypedDataV3Middleware,
     cfx_signTypedData_v4: signTypedDataV4Middleware,
     personal_sign: createAsyncMiddleware(personalSign),
+    eth_getEncryptionPublicKey: createAsyncMiddleware(encryptionPublicKey),
+    cfx_getEncryptionPublicKey: createAsyncMiddleware(encryptionPublicKey),
+    eth_decrypt: createAsyncMiddleware(decryptMessage),
+    cfx_decrypt: createAsyncMiddleware(decryptMessage),
     // 'personal_ecRecover': createAsyncMiddleware(personalRecover),
   })
 
@@ -240,6 +244,37 @@ function createWalletMiddleware(opts = {}) {
     res.result = senderHex
   }
 
+  async function encryptionPublicKey(req, res) {
+    if (!processEncryptionPublicKey)
+      throw new Error(
+        'WalletMiddleware - opts.processEncryptionPublicKey not provided'
+      )
+    const address = req.params[0]
+
+    await validateSender(address, req)
+    res.result = await processEncryptionPublicKey(address, req)
+  }
+
+  async function decryptMessage(req, res) {
+    if (!processDecryptMessage)
+      throw new Error(
+        'WalletMiddleware - opts.processDecryptMessage not provided'
+      )
+    // process normally
+    const firstParam = req.params[0]
+    const secondParam = req.params[1]
+    // non-standard "extraParams" to be appended to our "msgParams" obj
+    const extraParams = req.params[2] || {}
+
+    const msgParams = Object.assign({}, extraParams, {
+      from: secondParam,
+      data: firstParam,
+    })
+
+    await validateSender(secondParam, req)
+    res.result = await processDecryptMessage(msgParams, req)
+  }
+
   //
   // utility
   //
@@ -254,7 +289,7 @@ function createWalletMiddleware(opts = {}) {
       throw new Error('WalletMiddleware - opts.getAccounts not provided')
     }
     const accounts = await getAccounts(req)
-    const normalizedAccounts = accounts.map(address => address.toLowerCase())
+    const normalizedAccounts = accounts.map((address) => address.toLowerCase())
     const normalizedAddress = address.toLowerCase()
     if (!normalizedAccounts.includes(normalizedAddress)) {
       throw new Error('WalletMiddleware - Invalid "from" address.')
