@@ -42,11 +42,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yqrashawn/eth-json-rpc-middleware.git"
+    "url": "git+https://github.com/yqrashawn/cfx-json-rpc-middleware.git"
   },
   "bugs": {
-    "url": "https://github.com/yqrashawn/eth-json-rpc-middleware/issues"
+    "url": "https://github.com/yqrashawn/cfx-json-rpc-middleware/issues"
   },
-  "homepage": "https://github.com/yqrashawn/eth-json-rpc-middleware#readme",
+  "homepage": "https://github.com/yqrashawn/cfx-json-rpc-middleware#readme",
   "description": ""
 }
