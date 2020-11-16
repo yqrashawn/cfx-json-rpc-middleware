@@ -5,10 +5,14 @@ const blockTagParamIndex = require('./cache-utils').blockTagParamIndex
 
 module.exports = createBlockRefMiddleware
 
-function createBlockRefMiddleware (opts = {}) {
+function createBlockRefMiddleware(opts = {}) {
   const { provider, blockTracker } = opts
-  if (!provider) throw Error('BlockRefMiddleware - mandatory "provider" option is missing.')
-  if (!blockTracker) throw Error('BlockRefMiddleware - mandatory "blockTracker" option is missing.')
+  if (!provider)
+    throw Error('BlockRefMiddleware - mandatory "provider" option is missing.')
+  if (!blockTracker)
+    throw Error(
+      'BlockRefMiddleware - mandatory "blockTracker" option is missing.'
+    )
 
   return createAsyncMiddleware(async (req, res, next) => {
     const blockRefIndex = blockTagParamIndex(req)
@@ -18,7 +22,8 @@ function createBlockRefMiddleware (opts = {}) {
     let blockRef = req.params[blockRefIndex]
     // omitted blockRef implies "latest"
     if (blockRef === undefined) blockRef = 'latest'
-    if (blockRef !== 'latest') return next()
+    // if (blockRef !== 'latest') return next()
+    if (!blockRef.startsWith('latest')) return next()
     // lookup latest block
     const latestBlockNumber = await blockTracker.getLatestBlock()
     // create child request with specific block-ref
@@ -30,5 +35,4 @@ function createBlockRefMiddleware (opts = {}) {
     res.result = childRes.result
     res.error = childRes.error
   })
-
 }

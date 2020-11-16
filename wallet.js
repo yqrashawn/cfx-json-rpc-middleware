@@ -14,9 +14,10 @@ function createWalletMiddleware(opts = {}) {
   const processPersonalMessage = opts.processPersonalMessage
   const processEthSignMessage = opts.processEthSignMessage
   const processTransaction = opts.processTransaction
+
   const sendTxMiddleware = createAsyncMiddleware(sendTransaction)
   const signMiddleware = createAsyncMiddleware(ethSign)
-  const signTypedDataMiddleware = createAsyncMiddleware(ethSign)
+  const signTypedDataMiddleware = createAsyncMiddleware(signTypedData)
   const signTypedDataV0Middleware = createAsyncMiddleware(signTypedDataV0)
   const signTypedDataV3Middleware = createAsyncMiddleware(signTypedDataV3)
   const signTypedDataV4Middleware = createAsyncMiddleware(signTypedDataV4)
@@ -46,7 +47,7 @@ function createWalletMiddleware(opts = {}) {
     cfx_getEncryptionPublicKey: createAsyncMiddleware(encryptionPublicKey),
     eth_decrypt: createAsyncMiddleware(decryptMessage),
     cfx_decrypt: createAsyncMiddleware(decryptMessage),
-    // 'personal_ecRecover': createAsyncMiddleware(personalRecover),
+    personal_ecRecover: createAsyncMiddleware(personalRecover),
   })
 
   //

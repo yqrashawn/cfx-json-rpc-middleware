@@ -16,10 +16,16 @@ module.exports = createRetryOnEmptyMiddleware
 // `<nil>` comes from https://github.com/ethereum/go-ethereum/issues/16925
 const emptyValues = [undefined, null, '\u003cnil\u003e']
 
-function createRetryOnEmptyMiddleware (opts = {}) {
+function createRetryOnEmptyMiddleware(opts = {}) {
   const { provider, blockTracker } = opts
-  if (!provider) throw Error('BlockRefRewriteMiddleware - mandatory "provider" option is missing.')
-  if (!blockTracker) throw Error('BlockRefRewriteMiddleware - mandatory "blockTracker" option is missing.')
+  if (!provider)
+    throw Error(
+      'BlockRefRewriteMiddleware - mandatory "provider" option is missing.'
+    )
+  if (!blockTracker)
+    throw Error(
+      'BlockRefRewriteMiddleware - mandatory "blockTracker" option is missing.'
+    )
 
   return createAsyncMiddleware(async (req, res, next) => {
     const blockRefIndex = blockTagParamIndex(req)
@@ -30,7 +36,17 @@ function createRetryOnEmptyMiddleware (opts = {}) {
     // omitted blockRef implies "latest"
     if (blockRef === undefined) blockRef = 'latest'
     // skip if non-number block reference
-    if (['latest', 'pending'].includes(blockRef)) return next()
+    if (
+      [
+        'latest',
+        'latest_checkpoint',
+        'latest_state',
+        'latest_mined',
+        'latest_confirmed',
+        'pending',
+      ].includes(blockRef)
+    )
+      return next()
     // skip if block refernce is not a valid number
     const blockRefNumber = Number.parseInt(blockRef.slice(2), 16)
     if (Number.isNaN(blockRefNumber)) return next()
@@ -43,10 +59,17 @@ function createRetryOnEmptyMiddleware (opts = {}) {
     const childRequest = clone(req)
     // attempt child request until non-empty response is received
     const childResponse = await retry(10, async () => {
-      const attemptResponse = await pify(provider.sendAsync).call(provider, childRequest)
+      const attemptResponse = await pify(provider.sendAsync).call(
+        provider,
+        childRequest
+      )
       // verify result
       if (emptyValues.includes(attemptResponse.result)) {
-        throw new Error(`RetryOnEmptyMiddleware - empty response "${JSON.stringify(attemptResponse)}" for request "${JSON.stringify(childRequest)}"`)
+        throw new Error(
+          `RetryOnEmptyMiddleware - empty response "${JSON.stringify(
+            attemptResponse
+          )}" for request "${JSON.stringify(childRequest)}"`
+        )
       }
       return attemptResponse
     })
@@ -54,7 +77,6 @@ function createRetryOnEmptyMiddleware (opts = {}) {
     res.result = childResponse.result
     res.error = childResponse.error
   })
-
 }
 
 async function retry(maxRetries, asyncFn) {
@@ -69,5 +91,5 @@ async function retry(maxRetries, asyncFn) {
 }
 
 function timeout(duration) {
-  return new Promise(resolve => setTimeout(resolve, duration))
+  return new Promise((resolve) => setTimeout(resolve, duration))
 }

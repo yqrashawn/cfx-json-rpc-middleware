@@ -5,11 +5,11 @@ const emptyValues = [undefined, null, '\u003cnil\u003e']
 
 module.exports = createBlockCacheMiddleware
 
-
 function createBlockCacheMiddleware(opts = {}) {
   // validate options
   const { blockTracker } = opts
-  if (!blockTracker) throw new Error('createBlockCacheMiddleware - No BlockTracker specified')
+  if (!blockTracker)
+    throw new Error('createBlockCacheMiddleware - No BlockTracker specified')
 
   // create caching strategies
   const blockCache = new BlockCacheStrategy()
@@ -45,7 +45,7 @@ function createBlockCacheMiddleware(opts = {}) {
     if (blockTag === 'earliest') {
       // this just exists for symmetry with "latest"
       requestedBlockNumber = '0x00'
-    } else if (blockTag === 'latest') {
+    } else if (blockTag.startsWith('latest')) {
       // fetch latest block number
       const latestBlockNumber = await blockTracker.getLatestBlock()
       // clear all cache before latest block
@@ -71,18 +71,16 @@ function createBlockCacheMiddleware(opts = {}) {
   })
 }
 
-
 //
 // Cache Strategies
 //
 
 class BlockCacheStrategy {
-  
-  constructor () {
+  constructor() {
     this.cache = {}
   }
 
-  getBlockCacheForPayload (payload, blockNumberHex) {
+  getBlockCacheForPayload(payload, blockNumberHex) {
     const blockNumber = Number.parseInt(blockNumberHex, 16)
     let blockCache = this.cache[blockNumber]
     // create new cache if necesary
@@ -94,9 +92,12 @@ class BlockCacheStrategy {
     return blockCache
   }
 
-  async get (payload, requestedBlockNumber) {
+  async get(payload, requestedBlockNumber) {
     // lookup block cache
-    const blockCache = this.getBlockCacheForPayload(payload, requestedBlockNumber)
+    const blockCache = this.getBlockCacheForPayload(
+      payload,
+      requestedBlockNumber
+    )
     if (!blockCache) return
     // lookup payload in block cache
     const identifier = cacheUtils.cacheIdentifierForPayload(payload, true)
@@ -105,17 +106,20 @@ class BlockCacheStrategy {
     return cached
   }
 
-  async set (payload, requestedBlockNumber, result) {
+  async set(payload, requestedBlockNumber, result) {
     // check if we can cached this result
     const canCache = this.canCacheResult(payload, result)
     if (!canCache) return
     // set the value in the cache
-    const blockCache = this.getBlockCacheForPayload(payload, requestedBlockNumber)
+    const blockCache = this.getBlockCacheForPayload(
+      payload,
+      requestedBlockNumber
+    )
     const identifier = cacheUtils.cacheIdentifierForPayload(payload, true)
     blockCache[identifier] = result
   }
 
-  canCacheRequest (payload) {
+  canCacheRequest(payload) {
     // check request method
     if (!cacheUtils.canCache(payload)) {
       return false
@@ -129,12 +133,21 @@ class BlockCacheStrategy {
     return true
   }
 
-  canCacheResult (payload, result) {
+  canCacheResult(payload, result) {
     // never cache empty values (e.g. undefined)
     if (emptyValues.includes(result)) return
     // check if transactions have block reference before caching
-    if (['eth_getTransactionByHash', 'eth_getTransactionReceipt'].includes(payload.method)) {
-      if (!result || !result.blockHash || result.blockHash === '0x0000000000000000000000000000000000000000000000000000000000000000') {
+    if (
+      ['eth_getTransactionByHash', 'eth_getTransactionReceipt'].includes(
+        payload.method
+      )
+    ) {
+      if (
+        !result ||
+        !result.blockHash ||
+        result.blockHash ===
+          '0x0000000000000000000000000000000000000000000000000000000000000000'
+      ) {
         return false
       }
     }
@@ -143,14 +156,13 @@ class BlockCacheStrategy {
   }
 
   // removes all block caches with block number lower than `oldBlockHex`
-  clearBefore (oldBlockHex){
+  clearBefore(oldBlockHex) {
     const self = this
     const oldBlockNumber = Number.parseInt(oldBlockHex, 16)
     // clear old caches
     Object.keys(self.cache)
       .map(Number)
-      .filter(num => num < oldBlockNumber)
-      .forEach(num => delete self.cache[num])
+      .filter((num) => num < oldBlockNumber)
+      .forEach((num) => delete self.cache[num])
   }
-
 }

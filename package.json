@@ -1,6 +1,6 @@
 {
   "name": "@yqrashawn/cfx-json-rpc-middleware",
-  "version": "4.4.4",
+  "version": "4.4.6",
   "main": "block-ref.js",
   "directories": {
     "test": "test"
@@ -22,6 +22,7 @@
     "eth-block-tracker": "^4.4.1",
     "ethjs-query": "^0.3.8",
     "ganache-core": "^2.7.0",
+    "prettier": "^2.1.1",
     "tape": "^4.6.3"
   },
   "dependencies": {

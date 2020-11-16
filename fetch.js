@@ -1,9 +1,10 @@
 const fetch = global.fetch || require('fetch-ponyfill')().fetch
 const url = require('url')
-const { ethErrors: { rpc: rpcErrors } } = require('eth-json-rpc-errors')
+const {
+  ethErrors: { rpc: rpcErrors },
+} = require('eth-json-rpc-errors')
 const btoa = require('btoa')
 const createAsyncMiddleware = require('json-rpc-engine/src/createAsyncMiddleware')
-
 
 module.exports = createFetchMiddleware
 module.exports.createFetchConfigFromReq = createFetchConfigFromReq
@@ -19,9 +20,20 @@ const RETRIABLE_ERRORS = [
   'Failed to fetch',
 ]
 
-function createFetchMiddleware ({ rpcUrl, originHttpHeaderKey }) {
+function createFetchMiddleware({
+  rpcUrl,
+  originHttpHeaderKey,
+  appendMethod,
+  appendOtherInfo,
+}) {
   return createAsyncMiddleware(async (req, res, next) => {
-    const { fetchUrl, fetchParams } = createFetchConfigFromReq({ req, rpcUrl, originHttpHeaderKey })
+    const { fetchUrl, fetchParams } = createFetchConfigFromReq({
+      req,
+      rpcUrl,
+      originHttpHeaderKey,
+      appendMethod,
+      appendOtherInfo,
+    })
 
     // attempt request multiple times
     const maxAttempts = 5
@@ -37,7 +49,9 @@ function createFetchMiddleware ({ rpcUrl, originHttpHeaderKey }) {
         try {
           fetchBody = JSON.parse(rawBody)
         } catch (_) {
-          throw new Error(`FetchMiddleware - failed to parse response body: "${rawBody}"`)
+          throw new Error(
+            `FetchMiddleware - failed to parse response body: "${rawBody}"`
+          )
         }
         const result = parseResponse(fetchRes, fetchBody)
         // set result and exit retry loop
@@ -45,7 +59,9 @@ function createFetchMiddleware ({ rpcUrl, originHttpHeaderKey }) {
         return
       } catch (err) {
         const errMsg = err.toString()
-        const isRetriable = RETRIABLE_ERRORS.some(phrase => errMsg.includes(phrase))
+        const isRetriable = RETRIABLE_ERRORS.some((phrase) =>
+          errMsg.includes(phrase)
+        )
         // re-throw error if not retriable
         if (!isRetriable) throw err
       }
@@ -55,7 +71,7 @@ function createFetchMiddleware ({ rpcUrl, originHttpHeaderKey }) {
   })
 }
 
-function checkForHttpErrors (fetchRes) {
+function checkForHttpErrors(fetchRes) {
   // check for errors
   switch (fetchRes.status) {
     case 405:
@@ -70,7 +86,7 @@ function checkForHttpErrors (fetchRes) {
   }
 }
 
-function parseResponse (fetchRes, body) {
+function parseResponse(fetchRes, body) {
   // check for error code
   if (fetchRes.status !== 200) {
     throw rpcErrors.internal(`Non-200 status code: '${fetchRes.status}'`, body)
@@ -82,9 +98,22 @@ function parseResponse (fetchRes, body) {
   return body.result
 }
 
-function createFetchConfigFromReq({ req, rpcUrl, originHttpHeaderKey }) {
+function createFetchConfigFromReq({
+  req,
+  rpcUrl,
+  originHttpHeaderKey,
+  appendMethod,
+  appendOtherInfo,
+}) {
   const parsedUrl = url.parse(rpcUrl)
-  const fetchUrl = normalizeUrlFromParsed(parsedUrl)
+  let fetchUrl = normalizeUrlFromParsed(parsedUrl)
+  if (appendMethod && req && typeof req.method === 'string')
+    fetchUrl += req.method
+
+  if (appendOtherInfo && req && req.params && encodeURIComponent) {
+    const { data, ...otherParams } = req.params
+    fetchUrl += encodeURIComponent('/' + JSON.stringify({ ...otherParams }))
+  }
 
   // prepare payload
   // copy only canonical json rpc properties
@@ -105,8 +134,8 @@ function createFetchConfigFromReq({ req, rpcUrl, originHttpHeaderKey }) {
   const fetchParams = {
     method: 'POST',
     headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     },
     body: serializedPayload,
   }
@@ -137,17 +166,17 @@ function normalizeUrlFromParsed(parsedUrl) {
   return result
 }
 
-function createRatelimitError () {
+function createRatelimitError() {
   let msg = `Request is being rate limited.`
   return rpcErrors.internal(msg)
 }
 
-function createTimeoutError () {
+function createTimeoutError() {
   let msg = `Gateway timeout. The request took too long to process. `
   msg += `This can happen when querying logs over too wide a block range.`
   return rpcErrors.internal(msg)
 }
 
 function timeout(duration) {
-  return new Promise(resolve => setTimeout(resolve, duration))
+  return new Promise((resolve) => setTimeout(resolve, duration))
 }

@@ -6,11 +6,13 @@ module.exports = {
   blockTagForPayload: blockTagForPayload,
   paramsWithoutBlockTag: paramsWithoutBlockTag,
   blockTagParamIndex: blockTagParamIndex,
-  cacheTypeForPayload: cacheTypeForPayload
+  cacheTypeForPayload: cacheTypeForPayload,
 }
 
-function cacheIdentifierForPayload (payload, skipBlockRef) {
-  const simpleParams = skipBlockRef ? paramsWithoutBlockTag(payload) : payload.params
+function cacheIdentifierForPayload(payload, skipBlockRef) {
+  const simpleParams = skipBlockRef
+    ? paramsWithoutBlockTag(payload)
+    : payload.params
   if (canCache(payload)) {
     return payload.method + ':' + stringify(simpleParams)
   } else {
@@ -18,11 +20,11 @@ function cacheIdentifierForPayload (payload, skipBlockRef) {
   }
 }
 
-function canCache (payload) {
+function canCache(payload) {
   return cacheTypeForPayload(payload) !== 'never'
 }
 
-function blockTagForPayload (payload) {
+function blockTagForPayload(payload) {
   let index = blockTagParamIndex(payload)
 
   // Block tag param not passed.
@@ -33,7 +35,7 @@ function blockTagForPayload (payload) {
   return payload.params[index]
 }
 
-function paramsWithoutBlockTag (payload) {
+function paramsWithoutBlockTag(payload) {
   const index = blockTagParamIndex(payload)
 
   // Block tag param not passed.
@@ -49,18 +51,24 @@ function paramsWithoutBlockTag (payload) {
   return payload.params.slice(0, index)
 }
 
-function blockTagParamIndex (payload) {
+function blockTagParamIndex(payload) {
   switch (payload.method) {
     // blockTag is at index 2
+    case 'cfx_getStorageAt':
     case 'eth_getStorageAt':
       return 2
     // blockTag is at index 1
+    case 'cfx_getBalance':
+    case 'cfx_getCode':
+    case 'cfx_getNextNonce':
+    case 'cfx_call':
     case 'eth_getBalance':
     case 'eth_getCode':
     case 'eth_getTransactionCount':
     case 'eth_call':
       return 1
     // blockTag is at index 0
+    case 'cfx_getBlockByEpochNumber':
     case 'eth_getBlockByNumber':
       return 0
     // there is no blockTag
@@ -69,11 +77,24 @@ function blockTagParamIndex (payload) {
   }
 }
 
-function cacheTypeForPayload (payload) {
+function cacheTypeForPayload(payload) {
   switch (payload.method) {
     // cache permanently
     case 'web3_clientVersion':
     case 'web3_sha3':
+    case 'cfx_protocolVersion':
+    case 'cfx_getBlockTransactionCountByHash':
+    case 'cfx_getUncleCountByBlockHash':
+    case 'cfx_getCode':
+    case 'cfx_getBlockByHash':
+    case 'cfx_getTransactionByHash':
+    case 'cfx_getTransactionByBlockHashAndIndex':
+    case 'cfx_getTransactionReceipt':
+    case 'cfx_getUncleByBlockHashAndIndex':
+    case 'cfx_getCompilers':
+    case 'cfx_compileLLL':
+    case 'cfx_compileSolidity':
+    case 'cfx_compileSerpent':
     case 'eth_protocolVersion':
     case 'eth_getBlockTransactionCountByHash':
     case 'eth_getUncleCountByBlockHash':
@@ -92,6 +113,11 @@ function cacheTypeForPayload (payload) {
       return 'perma'
 
     // cache until fork
+    case 'cfx_getBlockByEpochNumber':
+    case 'cfx_getBlockTransactionCountByNumber':
+    case 'cfx_getUncleCountByBlockNumber':
+    case 'cfx_getTransactionByBlockNumberAndIndex':
+    case 'cfx_getUncleByBlockNumberAndIndex':
     case 'eth_getBlockByNumber':
     case 'eth_getBlockTransactionCountByNumber':
     case 'eth_getUncleCountByBlockNumber':
@@ -101,6 +127,16 @@ function cacheTypeForPayload (payload) {
       return 'fork'
 
     // cache for block
+    case 'cfx_gasPrice':
+    case 'cfx_epochNumber':
+    case 'cfx_getBalance':
+    case 'cfx_getStorageAt':
+    case 'cfx_getNextNonce':
+    case 'cfx_call':
+    case 'cfx_estimateGasAndCollateral':
+    case 'cfx_getFilterLogs':
+    case 'cfx_getLogs':
+
     case 'eth_gasPrice':
     case 'eth_blockNumber':
     case 'eth_getBalance':
@@ -117,6 +153,22 @@ function cacheTypeForPayload (payload) {
     case 'net_version':
     case 'net_peerCount':
     case 'net_listening':
+    case 'cfx_syncing':
+    case 'cfx_sign':
+    case 'cfx_coinbase':
+    case 'cfx_mining':
+    case 'cfx_hashrate':
+    case 'cfx_accounts':
+    case 'cfx_sendTransaction':
+    case 'cfx_sendRawTransaction':
+    case 'cfx_newFilter':
+    case 'cfx_newBlockFilter':
+    case 'cfx_newPendingTransactionFilter':
+    case 'cfx_uninstallFilter':
+    case 'cfx_getFilterChanges':
+    case 'cfx_getWork':
+    case 'cfx_submitWork':
+    case 'cfx_submitHashrate':
     case 'eth_syncing':
     case 'eth_sign':
     case 'eth_coinbase':
