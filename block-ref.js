@@ -23,7 +23,7 @@ function createBlockRefMiddleware(opts = {}) {
     // omitted blockRef implies "latest"
     if (blockRef === undefined) blockRef = 'latest'
     // if (blockRef !== 'latest') return next()
-    if (!blockRef.startsWith('latest')) return next()
+    if (!blockRef || !blockRef.startsWith('latest')) return next()
     // lookup latest block
     const latestBlockNumber = await blockTracker.getLatestBlock()
     // create child request with specific block-ref

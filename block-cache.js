@@ -45,7 +45,7 @@ function createBlockCacheMiddleware(opts = {}) {
     if (blockTag === 'earliest') {
       // this just exists for symmetry with "latest"
       requestedBlockNumber = '0x00'
-    } else if (blockTag.startsWith('latest')) {
+    } else if (blockTag && blockTag.startsWith('latest')) {
       // fetch latest block number
       const latestBlockNumber = await blockTracker.getLatestBlock()
       // clear all cache before latest block

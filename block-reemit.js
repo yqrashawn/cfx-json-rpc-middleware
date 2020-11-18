@@ -34,7 +34,7 @@ function createBlockReEmitMiddleware(opts = {}) {
     let blockRef = req.params[blockRefIndex]
     // omitted blockRef implies "latest"
     if (blockRef === undefined) blockRef = 'latest'
-    if (!blockRef.startsWith('latest')) return next()
+    if (!blockRef || !blockRef.startsWith('latest')) return next()
     // if (blockRef !== 'latest') return next()
     // lookup latest block
     const latestBlockNumber = await blockTracker.getLatestBlock()
