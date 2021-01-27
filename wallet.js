@@ -1,6 +1,6 @@
 const createAsyncMiddleware = require('json-rpc-engine/src/createAsyncMiddleware')
 const createScaffoldMiddleware = require('json-rpc-engine/src/createScaffoldMiddleware')
-const sigUtil = require('eth-sig-util')
+const sigUtil = require('cfx-sig-util')
 
 module.exports = createWalletMiddleware
 

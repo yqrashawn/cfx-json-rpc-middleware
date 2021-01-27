@@ -23,17 +23,18 @@
     "ethjs-query": "^0.3.8",
     "ganache-core": "^2.7.0",
     "prettier": "^2.1.1",
+    "semantic-release": "^17.1.1",
     "tape": "^4.6.3"
   },
   "dependencies": {
     "btoa": "^1.2.1",
+    "cfx-sig-util": "^2.1.0",
+    "cfx-util": "^0.0.4",
     "clone": "^2.1.1",
     "eth-json-rpc-errors": "^2.0.0",
     "eth-query": "^2.1.2",
-    "eth-sig-util": "^1.4.2",
     "ethereumjs-block": "^1.6.0",
     "ethereumjs-tx": "^1.3.7",
-    "ethereumjs-util": "^5.1.2",
     "ethereumjs-vm": "^2.6.0",
     "fetch-ponyfill": "^4.0.0",
     "json-rpc-engine": "^5.1.3",
@@ -49,5 +50,22 @@
     "url": "https://github.com/yqrashawn/cfx-json-rpc-middleware/issues"
   },
   "homepage": "https://github.com/yqrashawn/cfx-json-rpc-middleware#readme",
-  "description": ""
+  "description": "",
+  "release": {
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/npm",
+      "@semantic-release/github"
+    ],
+    "branches": [
+      "+([0-9])?(.{+([0-9]),x}).x",
+      "master",
+      {
+        "name": "alpha",
+        "channel": "alpha",
+        "prerelease": "alpha"
+      }
+    ]
+  }
 }
