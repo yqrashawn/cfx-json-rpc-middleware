@@ -23,7 +23,7 @@
     "ethjs-query": "^0.3.8",
     "ganache-core": "^2.7.0",
     "prettier": "^2.1.1",
-    "semantic-release": "^17.1.1",
+    "semantic-release": "^19.0.3",
     "tape": "^4.6.3"
   },
   "dependencies": {
